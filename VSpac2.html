@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Directional Position Quiz</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            flex-direction: column;
+        }
+
+        #quiz-container {
+            text-align: center;
+            padding: 20px;
+            border-radius: 8px;
+            background-color: #fff;
+            box-shadow: 0px 0px 15px rgba(0, 0, 0, 0.1);
+            width: 500px;
+        }
+
+        .game-area {
+            position: relative;
+            width: 400px;
+            height: 400px;
+            margin: 20px auto;
+            border: 2px solid #4CAF50;
+            border-radius: 8px;
+            overflow: hidden;
+            background-color: #f9f9f9;
+        }
+
+        #center-image {
+            width: 80px;
+            height: 80px;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 2;
+        }
+
+        .plate-image {
+            position: absolute;
+            width: 100px;
+            height: 60px;
+            z-index: 1;
+        }
+
+        #plate-left {
+            left: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+
+        #plate-right {
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+
+        #plate-top {
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        #plate-bottom {
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .drop-area {
+            position: absolute;
+            z-index: 2;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #left-area {
+            left: 0;
+            top: 100px;
+            width: 100px;
+            height: 200px;
+        }
+
+        #right-area {
+            right: 0;
+            top: 100px;
+            width: 100px;
+            height: 200px;
+        }
+
+        #top-area {
+            top: 0;
+            left: 100px;
+            width: 200px;
+            height: 100px;
+        }
+
+        #bottom-area {
+            bottom: 0;
+            left: 100px;
+            width: 200px;
+            height: 100px;
+        }
+
+        .placed-image {
+            position: bottom;
+            width: 25px;
+            height: 25px;
+            z-index: 3;
+            pointer-events: none;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+        }
+
+        .draggable {
+            width: 60px;
+            height: 60px;
+            cursor: move;
+            border: 2px solid #ccc;
+            border-radius: 8px;
+            transition: transform 0.2s;
+            background-color: white;
+        }
+
+        .draggable:hover {
+            transform: scale(1.05);
+        }
+
+        .instruction {
+            background-color: #e3f2fd;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+            font-weight: bold;
+        }
+
+        .options-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #f8f8f8;
+            border-radius: 8px;
+        }
+
+        button {
+            padding: 10px 20px;
+            margin: 10px;
+            border: none;
+            background-color: #4CAF50;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        #quiz-type {
+            font-size: 18px;
+            color: #2196F3;
+            margin-bottom: 10px;
+        }
+
+        .statistics-container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+            margin-top: 20px;
+            width: 100%;
+            max-width: 500px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-top: 10px;
+        }
+
+        .stat-item {
+            padding: 10px;
+            background-color: #f8f9fa;
+            border-radius: 5px;
+            text-align: center;
+        }
+
+        .history-list {
+            margin-top: 20px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .history-item {
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+        }
+    </style>
+</head>
+<body>
+    <div id="quiz-container">
+        <h1>Directional Position Quiz</h1>
+        <div id="quiz-type"></div>
+        <div class="instruction" id="instruction"></div>
+        
+        <div class="game-area">
+            <!-- Center arrow image -->
+            <img id="center-image" src="images/SR/arrow_left.png" alt="Direction Arrow">
+            
+            <!-- Plate images -->
+            <img class="plate-image" id="plate-left" src="images/SR/plate.png" alt="Left Plate">
+            <img class="plate-image" id="plate-right" src="images/SR/plate.png" alt="Right Plate">
+            <img class="plate-image" id="plate-top" src="images/SR/plate.png" alt="Top Plate">
+            <img class="plate-image" id="plate-bottom" src="images/SR/plate.png" alt="Bottom Plate">
+            
+            <!-- Drop areas -->
+            <div class="drop-area" id="left-area"></div>
+            <div class="drop-area" id="right-area"></div>
+            <div class="drop-area" id="top-area"></div>
+            <div class="drop-area" id="bottom-area"></div>
+        </div>
+
+        <div class="options-container" id="options-container"></div>
+        <button id="check-button" onclick="checkAnswer()">Check Answer</button>
+        <button id="reload-button" onclick="reloadRandomQuestion()">Try Different Question</button>
+    </div>
+
+    <div class="statistics-container">
+        <h2>Statistics</h2>
+        <div class="stats-grid">
+            <div class="stat-item">
+                <strong>Time:</strong> <span id="time">0:00</span>
+            </div>
+            <div class="stat-item">
+                <strong>Total Moves:</strong> <span id="total-moves">0</span>
+            </div>
+            <div class="stat-item">
+                <strong>Incorrect Placements:</strong> <span id="incorrect-moves">0</span>
+            </div>
+            <div class="stat-item">
+                <strong>Total Taps:</strong> <span id="total-taps">0</span>
+            </div>
+        </div>
+        <h3>Previous Attempts</h3>
+        <div class="history-list" id="history-list">
+            <!-- History items will be loaded here -->
+        </div>
+    </div>
+
+    <script>
+        const questionTypes = {
+            left: {
+                type: "LEFT",
+                questionImage: "images/SR/left.png",
+                options: ["images/SR/apple.png", "images/SR/orange.png", "images/SR/straw.png"],
+                instruction: "Place ALL objects to the LEFT of the arrow.",
+                correctArea: "left"
+            },
+            right: {
+                type: "RIGHT",
+                questionImage: "images/SR/right.png",
+                options: ["images/SR/apple.png", "images/SR/orange.png", "images/SR/straw.png"],
+                instruction: "Place ALL objects to the RIGHT of the arrow.",
+                correctArea: "right"
+            },
+            top: {
+                type: "TOP",
+                questionImage: "images/SR/up.png",
+                options: ["images/SR/apple.png", "images/SR/orange.png", "images/SR/straw.png"],
+                instruction: "Place ALL objects ABOVE the arrow.",
+                correctArea: "top"
+            },
+            bottom: {
+                type: "BOTTOM",
+                questionImage: "images/SR/down.png",
+                options: ["images/SR/apple.png", "images/SR/orange.png", "images/SR/straw.png"],
+                instruction: "Place ALL objects BELOW the arrow.",
+                correctArea: "bottom"
+            }
+        };
+
+        let currentQuestion;
+        let placedImages = new Map();
+
+        function selectRandomQuestion() {
+            const questions = Object.values(questionTypes);
+            return questions[Math.floor(Math.random() * questions.length)];
+        }
+
+        function rearrangeImages(dropArea, area) {
+            const placedImgs = Array.from(dropArea.getElementsByClassName('placed-image'));
+            const imageWidth = 25;
+            const gap = 5;
+            const totalWidth = placedImgs.length * (imageWidth + gap) - gap;
+            
+            // Always arrange horizontally
+            placedImgs.forEach((img, index) => {
+                let x, y;
+                
+                switch(area) {
+                    case 'left':
+                        x = 8 + index * (imageWidth + gap);
+                        y = dropArea.offsetHeight / 2 - imageWidth / 2;
+                        break;
+                    case 'right':
+                        x = dropArea.offsetWidth - totalWidth + index * (imageWidth + gap) - 8;
+                        y = dropArea.offsetHeight / 2 - imageWidth / 2;
+                        break;
+                    case 'top':
+                        x = (dropArea.offsetWidth - totalWidth) / 2 + index * (imageWidth + gap);
+                        y = 8;
+                        break;
+                    case 'bottom':
+                        x = (dropArea.offsetWidth - totalWidth) / 2 + index * (imageWidth + gap);
+                        y = dropArea.offsetHeight - imageWidth - 8;
+                        break;
+                }
+                
+                img.style.left = `${x}px`;
+                img.style.top = `${y}px`;
+            });
+        }
+
+        function handleDrop(e, area) {
+            e.preventDefault();
+            const imageSrc = e.dataTransfer.getData('text/plain');
+            const dropArea = document.getElementById(`${area}-area`);
+            
+            const newImage = document.createElement('img');
+            newImage.src = imageSrc;
+            newImage.className = 'placed-image';
+            
+            // Add a transition effect for the size change
+            newImage.style.transition = 'width 0.3s, height 0.3s';
+            
+            dropArea.appendChild(newImage);
+            
+            const originalImage = Array.from(document.getElementsByClassName('draggable'))
+                .find(img => img.src === imageSrc);
+            if (originalImage) {
+                originalImage.remove();
+            }
+            
+            placedImages.set(imageSrc, area);
+            rearrangeImages(dropArea, area);
+        }
+
+        function setupDropAreas() {
+            const areas = ['left', 'right', 'top', 'bottom'];
+            
+            areas.forEach(area => {
+                const dropArea = document.getElementById(`${area}-area`);
+                
+                dropArea.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    e.dataTransfer.dropEffect = 'move';
+                });
+                
+                dropArea.addEventListener('drop', (e) => handleDrop(e, area));
+            });
+        }
+
+        function dragStart(e) {
+            e.dataTransfer.setData('text/plain', e.target.src);
+            e.target.classList.add('dragging');
+        }
+
+        function dragEnd(e) {
+            e.target.classList.remove('dragging');
+        }
+
+        function initializeQuiz(questionType = null) {
+            currentQuestion = questionType || selectRandomQuestion();
+            
+            const centerImage = document.getElementById('center-image');
+            const optionsContainer = document.getElementById('options-container');
+            const instruction = document.getElementById('instruction');
+            const quizType = document.getElementById('quiz-type');
+            
+            centerImage.src = currentQuestion.questionImage;
+            instruction.textContent = currentQuestion.instruction;
+            quizType.textContent = `Question Type: ${currentQuestion.type} PLACEMENT`;
+            
+            optionsContainer.innerHTML = '';
+            document.querySelectorAll('.placed-image').forEach(img => img.remove());
+            placedImages.clear();
+            
+            currentQuestion.options.forEach(option => {
+                const img = document.createElement('img');
+                img.src = option;
+                img.className = 'draggable';
+                img.draggable = true;
+                img.addEventListener('dragstart', dragStart);
+                img.addEventListener('dragend', dragEnd);
+                optionsContainer.appendChild(img);
+            });
+        }
+
+        function checkAnswer() {
+            const allImagesPlaced = document.getElementsByClassName('draggable').length === 0;
+            if (!allImagesPlaced) {
+                alert('Please place all objects before checking!');
+                return;
+            }
+
+            const correctArea = currentQuestion.correctArea;
+            let isCorrect = true;
+
+            placedImages.forEach((area, imageSrc) => {
+                if (area !== correctArea) {
+                    isCorrect = false;
+                }
+            });
+
+            if (isCorrect) {
+                alert('Correct! All objects are in the right place!');
+                reloadRandomQuestion();
+            } else {
+                alert('Try again! Some objects are in the wrong area.');
+            }
+        }
+
+        function reloadRandomQuestion() {
+            initializeQuiz();
+        }
+
+        initializeQuiz();
+        setupDropAreas();
+    </script>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js";
+        import { getDatabase, ref, set, get } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-database.js";
+
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyDFENL5Z_2Cewh4p6zp_BZtxL9n0di-9u8",
+            authDomain: "projeccvi.firebaseapp.com",
+            projectId: "projeccvi",
+            storageBucket: "projeccvi.firebasestorage.app",
+            messagingSenderId: "279067566247",
+            appId: "1:279067566247:web:9cf00f7bf1ea3549fabb82"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+
+        // Game state variables
+        let startTime = Date.now();
+        let timerInterval;
+        let totalMoves = 0;
+        let incorrectMoves = 0;
+        let totalTaps = 0;
+
+        // Track all taps globally
+        document.addEventListener('click', () => {
+            totalTaps++;
+            document.getElementById('total-taps').textContent = totalTaps;
+        });
+
+        // Update timer
+        function updateTimer() {
+            const currentTime = Date.now();
+            const elapsedTime = Math.floor((currentTime - startTime) / 1000);
+            const minutes = Math.floor(elapsedTime / 60);
+            const seconds = elapsedTime % 60;
+            document.getElementById('time').textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+        }
+
+        // Start timer
+        timerInterval = setInterval(updateTimer, 1000);
+
+        // Function to save attempt to Firebase
+        function saveAttempt(isCorrect) {
+            const timestamp = Date.now();
+            const completionTime = Math.floor((timestamp - startTime) / 1000);
+            const attemptRef = ref(db, 'spatialAttempts/' + timestamp);
+            const attemptData = {
+                timestamp: timestamp,
+                completionTime: completionTime,
+                totalMoves: totalMoves,
+                incorrectMoves: incorrectMoves,
+                totalTaps: totalTaps,
+                isCorrect: isCorrect
+            };
+            
+            set(attemptRef, attemptData);
+            loadHistory();
+        }
+
+        // Load history
+        async function loadHistory() {
+            const historyRef = ref(db, 'spatialAttempts');
+            const snapshot = await get(historyRef);
+            const historyList = document.getElementById('history-list');
+            historyList.innerHTML = '';
+            
+            if (snapshot.exists()) {
+                const attempts = [];
+                snapshot.forEach(child => {
+                    attempts.push({ key: child.key, ...child.val() });
+                });
+                
+                attempts.sort((a, b) => b.timestamp - a.timestamp)
+                        .slice(0, 10)
+                        .forEach(attempt => {
+                    const date = new Date(attempt.timestamp);
+                    const historyItem = document.createElement('div');
+                    historyItem.className = 'history-item';
+                    historyItem.innerHTML = `
+                        <div>
+                            ${date.toLocaleDateString()} ${date.toLocaleTimeString()}
+                        </div>
+                        <div>
+                            Time: ${attempt.completionTime}s | 
+                            Moves: ${attempt.totalMoves} | 
+                            Incorrect: ${attempt.incorrectMoves}
+                        </div>
+                    `;
+                    historyList.appendChild(historyItem);
+                });
+            }
+        }
+
+        // Load initial history
+        loadHistory();
+
+        // Modified checkAnswer function
+        window.checkAnswer = function() {
+            const allImagesPlaced = document.getElementsByClassName('draggable').length === 0;
+            if (!allImagesPlaced) {
+                alert('Please place all objects before checking!');
+                return;
+            }
+
+            const correctArea = currentQuestion.correctArea;
+            let isCorrect = true;
+
+            placedImages.forEach((area, imageSrc) => {
+                if (area !== correctArea) {
+                    isCorrect = false;
+                    incorrectMoves++;
+                }
+            });
+
+            totalMoves++;
+            document.getElementById('total-moves').textContent = totalMoves;
+            document.getElementById('incorrect-moves').textContent = incorrectMoves;
+
+            if (isCorrect) {
+                saveAttempt(true);
+                alert('Correct! All objects are in the right place!');
+                startTime = Date.now(); // Reset timer for next attempt
+                reloadRandomQuestion();
+            } else {
+                saveAttempt(false);
+                alert('Try again! Some objects are in the wrong area.');
+            }
+        };
+    </script>
+</body>
+</html>
