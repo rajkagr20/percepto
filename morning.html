@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Moving Box Image Game</title>
+    <style>
+        /* All previous styles remain the same */
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .game-container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+            width: 100%;
+            max-width: 800px;
+        }
+
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(3, 120px);
+            grid-template-rows: repeat(2, 120px);
+            gap: 20px;
+            justify-content: center;
+            margin: 20px 0;
+            position: relative;
+        }
+
+        .box-placeholder {
+            width: 100px;
+            height: 100px;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-size: cover;
+            background-position: center;
+        }
+
+        .target-box {
+            width: 100px;
+            height: 100px;
+            border: 3px dashed #4CAF50;
+            border-radius: 10px;
+            position: absolute;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-size: cover;
+            background-position: center;
+            z-index: 10;
+            background-color: rgba(76, 175, 80, 0.1);
+        }
+
+        .options-container {
+            display: grid;
+            grid-template-columns: repeat(3, 120px);
+            grid-template-rows: repeat(2, 120px);
+            gap: 20px;
+            justify-content: center;
+            margin-top: 40px;
+        }
+
+        .image-option {
+            width: 100px;
+            height: 100px;
+            border: 2px solid #333;
+            border-radius: 10px;
+            cursor: grab;
+            transition: all 0.2s;
+            background-size: cover;
+            background-position: center;
+            justify-self: center;
+            align-self: center;
+            position: relative;
+        }
+
+        .image-option.dragging {
+            opacity: 0.5;
+            cursor: grabbing;
+        }
+
+        .image-option.placed {
+            visibility: hidden;
+        }
+
+        .image-option.invalid {
+            border-color: #f44336;
+            animation: shake 0.5s;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+
+        .feedback {
+            margin-top: 20px;
+            font-size: 18px;
+            font-weight: bold;
+            text-align: center;
+            color: #4CAF50;
+            min-height: 27px;
+        }
+
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 10px;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        .statistics-container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+            margin-top: 20px;
+            width: 100%;
+            max-width: 600px;
+            display: none;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-top: 10px;
+        }
+
+        .stat-item {
+            padding: 10px;
+            background-color: #f8f9fa;
+            border-radius: 5px;
+            text-align: center;
+        }
+
+        .history-list {
+            margin-top: 20px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .history-item {
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+        }
+    </style>
+</head>
+<body>
+    <h1>Image Sequence Game</h1>
+    
+    <div class="game-container">
+        <div class="grid-container" id="sequence-container">
+            <div class="box-placeholder"></div>
+            <div class="box-placeholder"></div>
+            <div class="box-placeholder"></div>
+            <div class="box-placeholder"></div>
+            <div class="box-placeholder"></div>
+            <div class="box-placeholder"></div>
+            <div class="target-box" id="target-box"></div>
+        </div>
+        
+        <div class="options-container" id="options-container"></div>
+    </div>
+
+    <div class="statistics-container" id="statistics">
+        <h2>Game Statistics</h2>
+        <div class="stats-grid">
+            <div class="stat-item">
+                <h3>Total Time</h3>
+                <p id="total-time">0s</p>
+            </div>
+            <div class="stat-item">
+                <h3>Total Moves</h3>
+                <p id="total-moves">0</p>
+            </div>
+            <div class="stat-item">
+                <h3>Incorrect Placements</h3>
+                <p id="incorrect-moves">0</p>
+            </div>
+            <div class="stat-item">
+                <h3>Total Taps</h3>
+                <p id="total-taps">0</p>
+            </div>
+        </div>
+        <h3>Previous Attempts</h3>
+        <div class="history-list" id="history-list"></div>
+    </div>
+
+    <div class="feedback" id="feedback"></div>
+    <button id="reset-button">New Game</button>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js";
+        import { getDatabase, ref, set, get } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-database.js";
+
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyDFENL5Z_2Cewh4p6zp_BZtxL9n0di-9u8",
+            authDomain: "projeccvi.firebaseapp.com",
+            projectId: "projeccvi",
+            storageBucket: "projeccvi.firebasestorage.app",
+            messagingSenderId: "279067566247",
+            appId: "1:279067566247:web:9cf00f7bf1ea3549fabb82"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+
+        // Game state and statistics variables
+        let startTime = null;
+        let totalMoves = 0;
+        let incorrectMoves = 0;
+        let totalTaps = 0;
+
+        const images = [
+            'images/VSM/morning/1.jpg',
+            'images/VSM/morning/2.jpg',
+            'images/VSM/morning/3.jpg',
+            'images/VSM/morning/4.jpg',
+            'images/VSM/morning/5.jpg',
+            'images/VSM/morning/6.jpg'
+        ];
+
+        let currentPosition = 0;
+        let sequence = Array(6).fill(null);
+        const correctPositions = [0, 1, 2, 3, 4, 5];
+
+        function updateGridPositions() {
+            const placeholders = document.querySelectorAll('.box-placeholder');
+            return Array.from(placeholders).map(placeholder => {
+                const rect = placeholder.getBoundingClientRect();
+                const container = document.getElementById('sequence-container').getBoundingClientRect();
+                return {
+                    left: rect.left - container.left + 'px',
+                    top: rect.top - container.top + 'px'
+                };
+            });
+        }
+
+        function shuffleArray(array) {
+            const shuffled = [...array];
+            for (let i = shuffled.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+            }
+            return shuffled;
+        }
+
+        function getUnplacedImages() {
+            return images.map((img, index) => index).filter(index => !sequence.includes(index));
+        }
+
+        function createImageOptions() {
+            const container = document.getElementById('options-container');
+            container.innerHTML = '';
+            
+            // Get unplaced images and shuffle them
+            const unplacedIndices = shuffleArray(getUnplacedImages());
+            
+            unplacedIndices.forEach((index) => {
+                const imageDiv = document.createElement('div');
+                imageDiv.className = 'image-option';
+                imageDiv.style.backgroundImage = `url(${images[index]})`;
+                imageDiv.draggable = true;
+                imageDiv.dataset.index = index;
+                imageDiv.dataset.position = correctPositions[index] + 1;
+                
+                imageDiv.addEventListener('dragstart', (e) => {
+                    e.dataTransfer.setData('text/plain', index);
+                    imageDiv.classList.add('dragging');
+                });
+                
+                imageDiv.addEventListener('dragend', () => {
+                    imageDiv.classList.remove('dragging');
+                });
+                
+                container.appendChild(imageDiv);
+            });
+        }
+
+        function updateTargetBox() {
+            const gridPositions = updateGridPositions();
+            const box = document.getElementById('target-box');
+            box.style.left = gridPositions[currentPosition].left;
+            box.style.top = gridPositions[currentPosition].top;
+        }
+
+        function showFeedback(message, isSuccess) {
+            const feedback = document.getElementById('feedback');
+            feedback.textContent = message;
+            feedback.style.color = isSuccess ? '#4CAF50' : '#f44336';
+            
+            if (!isSuccess) {
+                setTimeout(() => {
+                    feedback.textContent = '';
+                }, 2000);
+            }
+        }
+
+        function handleDrop(e) {
+            e.preventDefault();
+            const imageIndex = parseInt(e.dataTransfer.getData('text/plain'));
+            
+            if (correctPositions[imageIndex] !== currentPosition) {
+                const wrongImage = document.querySelector(`[data-index="${imageIndex}"]`);
+                wrongImage.classList.add('invalid');
+                setTimeout(() => wrongImage.classList.remove('invalid'), 500);
+                showFeedback(`Incorrect, try again!`, false);
+                totalMoves++;
+                incorrectMoves++;
+                return;
+            }
+            
+            sequence[currentPosition] = imageIndex;
+            
+            const placeholders = document.querySelectorAll('.box-placeholder');
+            placeholders[currentPosition].style.backgroundImage = `url(${images[imageIndex]})`;
+            placeholders[currentPosition].style.borderStyle = 'solid';
+            
+            const placedImage = document.querySelector(`[data-index="${imageIndex}"]`);
+            if (placedImage) {
+                placedImage.classList.add('placed');
+            }
+            
+            currentPosition++;
+            totalMoves++;
+            
+            if (currentPosition === 6) {
+                const box = document.getElementById('target-box');
+                box.style.display = 'none';
+                showFeedback('Congratulations! You completed the sequence!', true);
+                saveAttempt();
+            } else {
+                updateTargetBox();
+                // Shuffle remaining options after each correct placement
+                createImageOptions();
+            }
+        }
+
+        function resetGame() {
+            startTime = Date.now();
+            totalMoves = 0;
+            incorrectMoves = 0;
+            totalTaps = 0;
+            currentPosition = 0;
+            sequence = Array(6).fill(null);
+            document.getElementById('statistics').style.display = 'none';
+            
+            const placeholders = document.querySelectorAll('.box-placeholder');
+            placeholders.forEach(placeholder => {
+                placeholder.style.backgroundImage = 'none';
+                placeholder.style.borderStyle = 'solid';
+            });
+            
+            const box = document.getElementById('target-box');
+            box.style.display = 'flex';
+            updateTargetBox();
+            
+            document.getElementById('feedback').textContent = '';
+            createImageOptions();
+            loadHistory();
+        }
+
+        function loadHistory() {
+            const attemptsRef = ref(db, 'morningAttempts');
+            get(attemptsRef)
+                .then((snapshot) => {
+                    if (snapshot.exists()) {
+                        const historyList = document.getElementById('history-list');
+                        historyList.innerHTML = '';
+                        
+                        const attempts = [];
+                        snapshot.forEach((child) => {
+                            attempts.push({
+                                ...child.val(),
+                                key: child.key
+                            });
+                        });
+
+                        // Sort attempts by timestamp (most recent first)
+                        attempts.sort((a, b) => b.timestamp - a.timestamp);
+
+                        // Display only the last 10 attempts
+                        attempts.slice(0, 10).forEach((attempt) => {
+                            const historyItem = document.createElement('div');
+                            historyItem.className = 'history-item';
+                            historyItem.innerHTML = `
+                                <span>Time: ${attempt.completionTime}s</span>
+                                <span>Moves: ${attempt.totalMoves}</span>
+                                <span>Incorrect: ${attempt.incorrectMoves}</span>
+                                <span>Taps: ${attempt.totalTaps}</span>
+                            `;
+                            historyList.appendChild(historyItem);
+                        });
+                    }
+                })
+                .catch((error) => {
+                    console.error("Error loading history:", error);
+                });
+        }
+
+        function saveAttempt() {
+            const timestamp = Date.now();
+            const endTime = Date.now();
+            const completionTime = ((endTime - startTime) / 1000).toFixed(1);
+            
+            const attemptRef = ref(db, 'morningAttempts/' + timestamp);
+            const attemptData = {
+                timestamp: timestamp,
+                completionTime: completionTime,
+                totalMoves: totalMoves,
+                incorrectMoves: incorrectMoves,
+                totalTaps: totalTaps
+            };
+            
+            set(attemptRef, attemptData)
+                .then(() => {
+                    console.log("Attempt saved successfully");
+                    loadHistory(); // Load history after saving new attempt
+                })
+                .catch((error) => {
+                    console.error("Error saving attempt:", error);
+                });
+
+            // Display statistics
+            document.getElementById('total-time').textContent = completionTime + 's';
+            document.getElementById('total-moves').textContent = totalMoves;
+            document.getElementById('incorrect-moves').textContent = incorrectMoves;
+            document.getElementById('total-taps').textContent = totalTaps;
+            document.getElementById('statistics').style.display = 'block';
+        }
+
+        document.getElementById('target-box').addEventListener('dragover', (e) => e.preventDefault());
+        document.getElementById('target-box').addEventListener('drop', handleDrop);
+        document.getElementById('reset-button').addEventListener('click', resetGame);
+
+        // Track all taps globally
+        document.addEventListener('click', () => {
+            totalTaps++;
+        });
+
+        window.addEventListener('load', () => {
+            setTimeout(resetGame, 100);
+        });
+
+        window.addEventListener('resize', () => {
+            if (currentPosition < 6) {
+                updateTargetBox();
+            }
+        });
+    </script>
+</body>
+</html>

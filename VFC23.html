@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visual Perceptual Skills</title>
+    <style>
+        /* Your existing CSS */
+body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow-y: auto;
+            margin: 0;
+            flex-direction: column;
+        }
+
+        #quiz-container {
+            text-align: center;
+            padding: 20px;
+            border-radius: 8px;
+            background-color: #fff;
+            box-shadow: 0px 0px 15px rgba(0, 0, 0, 0.1);
+            width: 450px;
+        }
+
+        button {
+            padding: 10px 15px;
+            margin: 10px;
+            border: none;
+            background-color: #4CAF50;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        #question-container {
+            margin-bottom: 20px;
+        }
+
+        #question-container img {
+            width: 100%;
+            max-width: 200px;
+            height: auto;
+        }
+
+        #images-container {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        #images-container img {
+            width: 150px;
+            height: 150px;
+            cursor: pointer;
+            border: 2px solid transparent;
+            margin-left: 30px;
+        }
+
+        #images-container img:hover {
+            border-color: #4CAF50;
+        }
+
+        #result-container {
+            display: none;
+            margin-top: 20px;
+        }
+
+        #report-container {
+            margin-top: 40px;
+            width: 80%;
+            max-width: 600px;
+        }
+
+        #report-container h2 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        #report-container ul {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        #report-container li {
+            background-color: #f9f9f9;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+        }
+#report-container {
+    margin-top: 40px;
+    width: 80%;
+    max-width: 600px;
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* This centers the button */
+    justify-content: center; /* Centers content vertically */
+}
+
+body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            flex-direction: column;
+            height: 100vh;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .question {
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+
+        .options {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .option img {
+            width: 100px;
+            height: 100px;
+            cursor: pointer;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+        }
+
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr); /* 4 columns */
+            grid-template-rows: repeat(2, 150px); /* 2 rows */
+            gap: 10px;
+            width: 80%;
+            margin: 0 auto;
+        }
+
+        .grid-item {
+            border: 2px solid #ddd;
+            height: 150px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-radius: 8px;
+            background-color: #fff;
+        }
+
+        .grid-item img {
+            max-width: 100%;
+            max-height: 100%;
+        }
+
+        .option img.dragging {
+            opacity: 0.5;
+        }
+
+        .feedback {
+            font-size: 18px;
+            color: #333;
+            margin-top: 20px;
+        }
+
+        #completion-time {
+            font-size: 24px;
+            color: #4CAF50;
+            margin-top: 20px;
+            display: none;
+        }
+
+    </style>
+</head>
+<body>
+    <div class="question">
+        <h1><p>Arrange the images correctly in the grid!</p></h1>
+    </div>
+
+    <div class="grid-container">
+        <div class="grid-item" data-original="1"></div>
+        <div class="grid-item" data-original="2"></div>
+        <div class="grid-item" data-original="3"></div>
+        <div class="grid-item" data-original="4"></div>
+        <div class="grid-item" data-target="1"></div>
+        <div class="grid-item" data-target="2"></div>
+        <div class="grid-item" data-target="3"></div>
+        <div class="grid-item" data-target="4"></div>
+    </div>
+    <div id="completion-time"></div>
+
+    <div class="options"></div>
+    <div class="feedback" id="feedback"></div>
+
+    <div id="quiz-container">
+        <div id="result-container">
+            <h2>Your Score: <span id="score"></span></h2>
+            <h3>Time Taken for Each Question:</h3>
+            <ul id="time-list"></ul>
+            <h3>Total Time Taken: <span id="total-time"></span> seconds</h3>
+            <h3>Average Time per Question: <span id="avg-time"></span> seconds</h3>
+            <h3>First Tap Time: <span id="first-tap"></span> seconds</h3>
+            <h3>Total Taps: <span id="total-taps"></span></h3>
+            <h3>Total Incorrect Answers: <span id="total-incorrect"></span></h3>
+            <a href="index.html" style="text-decoration: none;"><button>Return Home</button></a>
+        </div>
+    </div>
+
+    <div id="report-container">
+        <h2>All Quiz Attempts</h2>
+        <ul id="report-list"></ul>
+<button id="clear-report" onclick="clearReport()">Clear Report</button>
+    </div>
+
+    <script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js";
+import { getDatabase, ref, set, get } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-database.js";
+
+// Firebase configuration
+const firebaseConfig = {
+    apiKey: "AIzaSyDFENL5Z_2Cewh4p6zp_BZtxL9n0di-9u8",
+    authDomain: "projeccvi.firebaseapp.com",
+    projectId: "projeccvi",
+    storageBucket: "projeccvi.firebasestorage.app",
+    messagingSenderId: "279067566247",
+    appId: "1:279067566247:web:9cf00f7bf1ea3549fabb82"
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+
+const options = document.querySelectorAll('.option img');
+const gridItems = document.querySelectorAll('.grid-item');
+const feedback = document.getElementById('feedback');
+
+let startTime = null;
+        let endTime = null;
+        let isGameComplete = false;
+        let totalTaps = 0;
+        let totalIncorrectAttempts = 0;
+        let filledGrids = 0;
+        const totalGrids = 4;
+
+        // Update the checkCompletion function
+function checkCompletion() {
+    const allGridsFilled = document.querySelectorAll('.grid-item[data-target] img').length === totalGrids;
+    if (allGridsFilled && !isGameComplete) {
+        endTime = Date.now();
+        const completionTime = ((endTime - startTime) / 1000).toFixed(2);
+        
+        // Update the completion time in the statistics container
+        document.getElementById('completion-time-display').textContent = `${completionTime} seconds`;
+        
+        isGameComplete = true;
+        
+        // Save the attempt with completion time
+        saveAttempt({
+            totalTime: completionTime,
+            totalTaps,
+            totalIncorrectAttempts,
+            completionStatus: 'complete'
+        });
+    }
+}
+
+
+
+// Create submit button
+const submitButton = document.createElement('button');
+submitButton.textContent = 'Submit';
+submitButton.id = 'submit-button';
+submitButton.style.display = 'none';
+document.body.appendChild(submitButton);
+
+// Statistics container
+const statsContainer = document.createElement('div');
+statsContainer.id = 'quiz-stats';
+statsContainer.innerHTML = `
+    <h3>Quiz Statistics</h3>
+    <p>Completion Time: <span id="completion-time-display">Not completed</span></p>
+    <p>Total Taps: <span id="total-taps-display">0</span></p>
+    <p>Total Incorrect Attempts: <span id="total-incorrect-display">0</span></p>
+`;
+document.body.insertBefore(statsContainer, document.querySelector('#quiz-container'));
+
+// Track taps globally
+document.addEventListener('click', () => {
+    totalTaps++;
+    document.getElementById('total-taps-display').textContent = totalTaps;
+});
+
+// Add this code right after your Firebase initialization
+
+// Function to shuffle array
+function shuffleArray(array) {
+    for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+    }
+    return array;
+}
+
+
+function initializeGrid() {
+    const imageSet = [
+        { id: 1, top: "images/VFC/lvl2/size/1a.png", bottom: "images/VFC/lvl2/size/1b.png" },
+        { id: 2, top: "images/VFC/lvl2/size/2a.png", bottom: "images/VFC/lvl2/size/2b.png" },
+        { id: 3, top: "images/VFC/lvl2/size/3a.png", bottom: "images/VFC/lvl2/size/3b.png" },
+        { id: 4, top: "images/VFC/lvl2/size/4a.png", bottom: "images/VFC/lvl2/size/4b.png" }
+    ];
+
+    // Additional decoy images
+    const decoyImages = [
+        { id: 5, bottom: "images/VFC/lvl2/size/1c.png" },
+        { id: 6, bottom: "images/VFC/lvl2/size/2c.png" },
+        { id: 7, bottom: "images/VFC/lvl2/size/3c.png" },
+        { id: 8, bottom: "images/VFC/lvl2/size/4c.png" }
+    ];
+
+    // Shuffle the image set for top row
+    const shuffledImages = [...imageSet].sort(() => Math.random() - 0.5);
+
+    // Update top row with shuffled images
+    const topRowItems = document.querySelectorAll('.grid-item[data-original]');
+    topRowItems.forEach((item, index) => {
+        const currentImage = shuffledImages[index];
+        item.innerHTML = `<img src="${currentImage.top}">`;
+        item.setAttribute('data-match', currentImage.id);
+    });
+
+    // Clear and populate options
+    const optionsContainer = document.querySelector('.options');
+    optionsContainer.innerHTML = '';
+
+    // Create array with correct bottom images and decoy images
+    const allBottomImages = [
+        ...shuffledImages.map(img => ({ ...img, isDecoy: false })),
+        ...decoyImages.map(img => ({ ...img, isDecoy: true }))
+    ];
+
+    // Shuffle all bottom images
+    const shuffledBottomImages = allBottomImages.sort(() => Math.random() - 0.5);
+
+    // Take only the first 8 images (4 correct + 4 decoys)
+    const selectedBottomImages = shuffledBottomImages.slice(0, 8);
+
+    // Create option elements for each selected bottom image
+    selectedBottomImages.forEach(image => {
+        const optionDiv = document.createElement('div');
+        optionDiv.className = 'option';
+        optionDiv.setAttribute('draggable', 'true');
+        
+        const optionImg = document.createElement('img');
+        optionImg.src = image.bottom;
+        optionImg.setAttribute('data-match', image.id);
+        optionImg.id = `drag${image.id}`;
+        
+        if (image.isDecoy) {
+            optionImg.setAttribute('data-decoy', 'true');
+        }
+        
+        optionDiv.appendChild(optionImg);
+        optionsContainer.appendChild(optionDiv);
+    });
+
+    // Update the options container styling to accommodate more images
+    optionsContainer.style.display = 'grid';
+    optionsContainer.style.gridTemplateColumns = 'repeat(4, 1fr)';
+    optionsContainer.style.gap = '10px';
+    optionsContainer.style.margin = '20px auto';
+    optionsContainer.style.maxWidth = '600px';
+
+    // Initialize drag and drop
+    initializeDragAndDrop();
+}
+
+        function initializeDragAndDrop() {
+            const options = document.querySelectorAll('.option img');
+            const gridItems = document.querySelectorAll('.grid-item[data-target]');
+
+            options.forEach(option => {
+                option.addEventListener('dragstart', dragStart);
+                option.addEventListener('dragend', dragEnd);
+            });
+
+            gridItems.forEach(item => {
+                item.addEventListener('dragover', dragOver);
+                item.addEventListener('drop', drop);
+            });
+        }
+
+window.addEventListener('load', initializeGrid);
+
+
+// Add shuffle button functionality
+const shuffleButton = document.createElement('button');
+        shuffleButton.textContent = 'Shuffle Grid';
+        shuffleButton.style.marginBottom = '20px';
+        document.querySelector('.question').appendChild(shuffleButton);
+
+        shuffleButton.addEventListener('click', () => {
+            initializeGrid();
+            resetGame();
+        });
+
+        // Update the resetGame function
+function resetGame() {
+    filledGrids = 0;
+    startTime = null;
+    endTime = null;
+    isGameComplete = false;
+    totalTaps = 0;
+    totalIncorrectAttempts = 0;
+    
+    // Reset all statistics displays
+    document.getElementById('completion-time-display').textContent = 'Not completed';
+    document.getElementById('total-taps-display').textContent = '0';
+    document.getElementById('total-incorrect-display').textContent = '0';
+    feedback.textContent = '';
+    
+    // Clear bottom row
+    document.querySelectorAll('.grid-item[data-target]').forEach(item => {
+        item.innerHTML = '';
+    });
+}
+
+
+
+// Initialize the grid when the page loads
+window.addEventListener('load', initializeGrid);
+
+options.forEach(option => {
+    option.addEventListener('dragstart', dragStart);
+    option.addEventListener('dragend', dragEnd);
+});
+
+gridItems.forEach(gridItem => {
+    gridItem.addEventListener('dragover', dragOver);
+    gridItem.addEventListener('drop', drop);
+});
+
+function dragStart(e) {
+    if (!startTime) startTime = Date.now();
+    e.dataTransfer.setData('text', e.target.id);
+    e.target.classList.add('dragging');
+}
+
+function dragEnd(e) {
+    e.target.classList.remove('dragging');
+}
+
+function dragOver(e) {
+    e.preventDefault();
+}
+
+function drop(e) {
+            e.preventDefault();
+            const gridItem = e.target.closest('.grid-item');
+            if (!gridItem || gridItem.querySelector('img')) return;
+
+            if (!startTime) {
+                startTime = Date.now();
+            }
+
+            const draggedId = e.dataTransfer.getData('text');
+            const draggedElement = document.getElementById(draggedId);
+            
+            if (draggedElement.getAttribute('data-decoy') === 'true') {
+                totalIncorrectAttempts++;
+                document.getElementById('total-incorrect-display').textContent = totalIncorrectAttempts;
+                feedback.textContent = "That's a decoy image! Try again!";
+                feedback.style.color = "red";
+                return;
+            }
+
+            const targetId = gridItem.getAttribute('data-target');
+            const topImage = document.querySelector(`.grid-item[data-original="${targetId}"]`);
+            
+            if (!topImage) return;
+
+            const topMatchId = topImage.getAttribute('data-match');
+            const draggedMatchId = draggedElement.getAttribute('data-match');
+
+            if (topMatchId === draggedMatchId) {
+                const newImg = draggedElement.cloneNode(true);
+                gridItem.appendChild(newImg);
+                newImg.setAttribute('draggable', false);
+                feedback.textContent = "Correct placement!";
+                feedback.style.color = "green";
+                filledGrids++;
+                checkCompletion();
+            } else {
+                totalIncorrectAttempts++;
+                document.getElementById('total-incorrect-display').textContent = totalIncorrectAttempts;
+                feedback.textContent = "Incorrect placement. Try again!";
+                feedback.style.color = "red";
+            }
+        }
+
+
+
+// Submit button event listener
+submitButton.addEventListener('click', () => {
+    const totalPlacementTime = (Date.now() - startTime) / 1000;
+    document.getElementById('total-placement-time').textContent = totalPlacementTime.toFixed(2);
+    
+    saveAttempt({
+        totalTime: totalPlacementTime.toFixed(2),
+        totalTaps: totalTaps,
+        totalIncorrectAttempts: totalIncorrectAttempts
+    });
+
+    submitButton.style.display = 'none';
+});
+
+function saveAttempt(data) {
+    const attemptsRef = ref(db, 'gridAttempts/');
+    const newAttemptRef = ref(db, 'gridAttempts/' + Date.now());
+    set(newAttemptRef, data)
+        .then(() => console.log("Attempt saved!"))
+        .catch(error => console.error("Error saving attempt: ", error));
+}
+
+function fetchAttempts() {
+    const attemptsRef = ref(db, 'gridAttempts/');
+    get(attemptsRef)
+        .then(snapshot => {
+            if (snapshot.exists()) {
+                const attempts = snapshot.val();
+                const reportList = document.getElementById('report-list');
+                reportList.innerHTML = '';
+
+                for (let attemptId in attempts) {
+                    const attempt = attempts[attemptId];
+                    const listItem = document.createElement('li');
+                    listItem.innerText = `Time: ${attempt.totalTime}s, Taps: ${attempt.totalTaps}, Incorrect Attempts: ${attempt.totalIncorrectAttempts}`;
+                    reportList.appendChild(listItem);
+                }
+            } else {
+                console.log("No data available");
+            }
+        })
+        .catch(error => console.error("Error fetching attempts: ", error));
+}
+
+fetchAttempts();
+    </script>
+</body>
+</html>

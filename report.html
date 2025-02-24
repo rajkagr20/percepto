@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visual Perceptual Skills</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            min-height: 100vh;
+            overflow-y: auto;
+            margin: 0;
+        }
+
+        #quiz-container {
+            text-align: center;
+            padding: 20px;
+            border-radius: 8px;
+            background-color: #fff;
+            box-shadow: 0px 0px 15px rgba(0, 0, 0, 0.1);
+            width: 80%;
+            margin-bottom: 20px;
+        }
+
+        #report-container {
+            display: grid;
+            grid-template-columns: 1fr 2fr; /* First column for names, second column for reports */
+            gap: 20px;
+            width: 90%;
+            max-width: 800px;
+            margin: auto;
+        }
+
+        .quiz-name {
+            background-color: #e6f7ff;
+            padding: 15px;
+            border-radius: 5px;
+            font-weight: bold;
+            text-align: center;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .quiz-report {
+            background-color: #fff;
+            padding: 15px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+            overflow-y: auto;
+            max-height: 200px;
+        }
+
+        .final-result {
+            margin-top: 20px;
+            font-size: 18px;
+            font-weight: bold;
+            padding: 10px;
+            border-radius: 5px;
+        }
+
+        .high-risk {
+            background-color: #ff6666;
+            color: white;
+        }
+
+        .medium-risk {
+            background-color: #ffcc00;
+            color: white;
+        }
+
+        .low-risk {
+            background-color: #66cc66;
+            color: white;
+        }
+
+        button {
+            padding: 10px 15px;
+            margin: 10px 0;
+            border: none;
+            background-color: #4CAF50;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+#cvi-risk-result {
+        font-size: 40px; /* Increase the size as desired */
+        font-weight: bold;
+        text-align: center;
+        padding: 15px;
+        border-radius: 5px;
+    }
+    </style>
+</head>
+<body>
+    <div id="quiz-container">
+        <h1>Visual Perceptual Skills</h1>
+        <button onclick="clearAllReports()">Clear All Reports</button>
+    </div>
+
+    <div id="report-container">
+        <div class="quiz-name">VD-Shapes(Lv1)</div>
+        <div class="quiz-report" id="report-quizAttempts1"></div>
+
+        <div class="quiz-name">VD-Shapes(Lv2)</div>
+        <div class="quiz-report" id="report-quizAttempts2"></div>
+
+        <div class="quiz-name">VD-Sizes</div>
+        <div class="quiz-report" id="report-quizAttempts3"></div>
+
+        <div class="quiz-name">VD-Emotions</div>
+        <div class="quiz-report" id="report-quizAttempts4"></div>
+
+        <div class="quiz-name">VD-Colours</div>
+        <div class="quiz-report" id="report-quizAttempts5"></div>
+        
+        <div class="quiz-name">VC-Puzzle</div>
+        <div class="quiz-report" id="report-quizAttempts6"></div>
+
+        <div class="quiz-name">VC-Match</div>
+        <div class="quiz-report" id="report-quizAttempts7"></div>
+
+        <div class="quiz-name">VC-Animal</div>
+        <div class="quiz-report" id="report-quizAttempts8"></div>
+
+        <div class="quiz-name">VFC-numbers(lvl1)</div>
+        <div class="quiz-report" id="report-quizAttempts9"></div>
+
+        <div class="quiz-name">VFC-letters(lvl1)</div>
+        <div class="quiz-report" id="report-quizAttempts10"></div>
+        
+        <div class="quiz-name">VFC-size and shape(lvl1)</div>
+        <div class="quiz-report" id="report-quizAttempts11"></div>
+
+        <div class="quiz-name">VFC-numbers(lvl2)</div>
+        <div class="quiz-report" id="report-quizAttempts12"></div>
+
+        <div class="quiz-name">VFC-letters(lvl2)</div>
+        <div class="quiz-report" id="report-quizAttempts13"></div>
+        
+        <div class="quiz-name">VFC-size and shape(lvl2)</div>
+        <div class="quiz-report" id="report-quizAttempts14"></div>
+
+        <div class="quiz-name">FG</div>
+        <div class="quiz-report" id="report-quizAttempts15"></div>
+        
+        <div class="quiz-name">SR-Move top or bottom</div>
+        <div class="quiz-report" id="report-quizAttempts16"></div>
+
+        <div class="quiz-name">SR-Move all directions</div>
+        <div class="quiz-report" id="report-quizAttempts17"></div>
+
+        <div class="quiz-name">VN-LVL1</div>
+        <div class="quiz-report" id="report-quizAttempts18"></div>
+
+        <div class="quiz-name">VN-LVL2</div>
+        <div class="quiz-report" id="report-quizAttempts19"></div>
+
+        <div class="quiz-name">VSM-Beads</div>
+        <div class="quiz-report" id="report-quizAttempts20"></div>
+        
+        <div class="quiz-name">VSM-CROW</div>
+        <div class="quiz-report" id="report-quizAttempts21"></div>
+
+        <div class="quiz-name">VSM LION</div>
+        <div class="quiz-report" id="report-quizAttempts22"></div>
+
+        <div class="quiz-name">VSM-MORNING</div>
+        <div class="quiz-report" id="report-quizAttempts23"></div>
+
+        <div class="quiz-name">VSM-DRESSING</div>
+        <div class="quiz-report" id="report-quizAttempts24"></div>
+
+        <div class="quiz-name">VM</div>
+        <div class="quiz-report" id="report-quizAttempts25"></div>
+    </div>
+
+    <div id="final-risk">
+        <div class="final-result" id="cvi-risk-result"></div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js";
+        import { getDatabase, ref, get, remove } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-database.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDFENL5Z_2Cewh4p6zp_BZtxL9n0di-9u8",
+            authDomain: "projeccvi.firebaseapp.com",
+            projectId: "projeccvi",
+            storageBucket: "projeccvi.app",
+            messagingSenderId: "279067566247",
+            appId: "1:279067566247:web:9cf00f7bf1ea3549fabb82"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+
+        const attemptKeys = ["quizAttempts1", "quizAttempts2", "quizAttempts3", "quizAttempts4", "quizAttempts5"];
+        let impairedCount = 0;
+
+        function fetchAllAttempts() {
+    impairedCount = 0; // Reset the impaired count
+
+    attemptKeys.forEach((attemptKey, index) => {
+        const reportContainer = document.getElementById(`report-${attemptKey}`);
+        reportContainer.innerHTML = ''; // Clear previous content
+
+        const attemptsRef = ref(db, `${attemptKey}/`);
+        get(attemptsRef)
+            .then(snapshot => {
+                if (snapshot.exists()) {
+                    const attempts = snapshot.val();
+                    const latestAttemptKey = Object.keys(attempts).sort().pop(); // Get the latest attempt (by key)
+                    const latestAttempt = attempts[latestAttemptKey];
+
+                    // Create a report for the latest attempt
+                    const report = document.createElement('div');
+                    report.innerHTML = `
+                        <strong>Score:</strong> ${latestAttempt.score}<br>
+                        <strong>Total Time:</strong> ${latestAttempt.totalTime} seconds<br>
+                        <strong>Average Time:</strong> ${latestAttempt.avgTime} seconds<br>
+                        <strong>First Tap Time:</strong> ${latestAttempt.firstTapTime} seconds<br>
+                        <strong>Total Taps:</strong> ${latestAttempt.totalTaps}<br>
+                        <strong>Total Incorrect Answers:</strong> ${latestAttempt.totalIncorrectAnswers}<br>
+                        <em>Attempt ID:</em> ${latestAttemptKey}
+                    `;
+                    report.style.marginBottom = '10px';
+                    reportContainer.appendChild(report);
+
+                    // Determine the impairment status for the latest quiz attempt
+                    let quizResult = 'Present';
+                    if (latestAttempt.score < 3 || latestAttempt.firstTapTime > 6 || 
+                        (latestAttempt.totalTaps - latestAttempt.score - latestAttempt.totalIncorrectAnswers) > 2) {
+                        quizResult = 'Impaired';
+                        impairedCount++;
+                    }
+
+                    const statusDiv = document.createElement('div');
+                    statusDiv.innerHTML = `<strong>Result:</strong> ${quizResult}`;
+                    reportContainer.appendChild(statusDiv);
+                } else {
+                    reportContainer.textContent = 'No attempts found.';
+                }
+
+                // After processing all attempts, calculate the CVI risk level
+                displayCviRiskLevel();
+            })
+            .catch(error => {
+                console.error(`Error fetching attempts for ${attemptKey}: `, error);
+            });
+    });
+}
+
+
+        function displayCviRiskLevel() {
+    const riskContainer = document.getElementById("cvi-risk-result");
+
+    // Remove all risk-related classes first
+    riskContainer.classList.remove('high-risk', 'medium-risk', 'low-risk');
+
+    let riskLevel = '';
+    if (impairedCount >= 4) {
+        riskLevel = 'High Risk of CVI';
+        riskContainer.classList.add('high-risk'); // Apply red color for high risk
+    } else if (impairedCount >= 2) {
+        riskLevel = 'Medium Risk of CVI';
+        riskContainer.classList.add('medium-risk'); // Apply yellow color for medium risk
+    } else {
+        riskLevel = 'Low Risk of CVI';
+        riskContainer.classList.add('low-risk'); // Apply green color for low risk
+    }
+
+    riskContainer.textContent = `Overall CVI Risk Level: ${riskLevel}`;
+}
+
+
+        function clearAllReports() {
+            attemptKeys.forEach(attemptKey => {
+                const attemptsRef = ref(db, `${attemptKey}/`);
+                get(attemptsRef)
+                    .then(snapshot => {
+                        if (snapshot.exists()) {
+                            remove(attemptsRef)
+                                .then(() => {
+                                    console.log(`Cleared reports for ${attemptKey}`);
+                                })
+                                .catch(error => {
+                                    console.error(`Error clearing reports for ${attemptKey}: `, error);
+                                });
+                        }
+                    })
+                    .catch(error => {
+                        console.error(`Error fetching data for clearing ${attemptKey}: `, error);
+                    });
+            });
+            alert('All reports cleared successfully!');
+            fetchAllAttempts(); // Refresh the reports
+        }
+
+        // Automatically fetch attempts on page load
+        window.onload = fetchAllAttempts;
+    </script>
+</body>
+</html>

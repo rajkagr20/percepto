@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visual Perceptual Skills</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div id="quiz-container">
+        <h1>Visual Perceptual Skills</h1>
+            <a href="report.html" style="text-decoration: none;"><button>Report</button></a>
+        <h2>Select a Quiz Type:</h2>
+<br>
+        <!-- Quiz Type Selection -->
+        <div id="quiz-type">
+            
+            <button onclick="startQuiz('animals')">Fixation to Mirror</button>
+            <a href="VD.html" style="text-decoration: none;"><button>Visual Discrimination</button></a>
+            <a href="VC.html" style="text-decoration: none;"><button>Virtual Closure</button></a>
+            <a href="VFC.html" style="text-decoration: none;"><button>Virtual Form Constancy</button></a>
+            <a href="VFigure2.html" style="text-decoration: none;"><button>Figure Ground</button></a>
+            <a href="Vspac.html" style="text-decoration: none;"><button>Spatial Relations</button></a>
+            <a href="VN.html" style="text-decoration: none;"><button>Visual Neglect</button></a>
+            <a href="VSM.html" style="text-decoration: none;"><button>Visual Sequential Memory</button></a>
+            <a href="VM1.html" style="text-decoration: none;"><button>Visual Memory</button></a>
+            <a href="Vmotion1.html" style="text-decoration: none;"><button>Motion Perception</button></a>
+        </div>
+
+
+        <!-- Quiz Questions -->
+        <div id="questions-container" style="display:none;">
+            <h2 id="quiz-title"></h2>
+            <div id="question-container"></div>
+            <button id="next-button" onclick="nextQuestion()">Next</button>
+        </div>
+
+        <!-- Results -->
+        <div id="result-container" style="display:none;">
+            <h2>Your Score: <span id="score"></span></h2>
+            <button onclick="restartQuiz()">Restart Quiz</button>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

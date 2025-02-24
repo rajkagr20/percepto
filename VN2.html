@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alphabet Memory Game</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+        }
+
+        .game-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            width: 100%;
+            max-width: 800px;
+            margin: 0 auto;
+            text-align: center;
+        }
+
+        .question-section {
+            margin-bottom: 20px;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .letter-display {
+            font-size: 72px;
+            margin: 20px;
+            padding: 20px 40px;
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            min-width: 120px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #readyButton {
+            font-size: 18px;
+            padding: 12px 30px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 20px;
+        }
+
+        #readyButton:hover {
+            background-color: #45a049;
+            transform: scale(1.05);
+        }
+
+        .options-container {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 10px;
+            margin-top: 20px;
+            width: 100%;
+            max-width: 600px;
+        }
+
+        .letter-option {
+            font-size: 36px;
+            padding: 20px;
+            background-color: #fff;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            aspect-ratio: 1;
+        }
+
+        .letter-option:hover {
+            background-color: #f5f5f5;
+            transform: scale(1.05);
+            border-color: #4CAF50;
+        }
+
+        .letter-option.incorrect {
+            background-color: #ffebee;
+            border-color: #f44336;
+            animation: shake 0.5s;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+
+        .correct-feedback, .incorrect-feedback {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 10px 20px;
+            border-radius: 5px;
+            color: white;
+            font-weight: bold;
+            animation: fadeOut 1s forwards;
+        }
+
+        .correct-feedback {
+            background-color: #4caf50;
+        }
+
+        .incorrect-feedback {
+            background-color: #f44336;
+        }
+
+        .statistics-container {
+            width: 100%;
+            padding: 20px;
+            background-color: #fff;
+            box-shadow: 0 -2px 5px rgba(0,0,0,0.1);
+            margin-top: auto;
+        }
+
+        .stats-grid {
+            max-width: 800px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .stat-item {
+            padding: 10px;
+            background-color: #f5f5f5;
+            border-radius: 5px;
+        }
+
+        .history-container {
+            max-width: 800px;
+            margin: 20px auto 0;
+        }
+
+        .history-item {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            padding: 10px;
+            background-color: #f5f5f5;
+            margin: 5px 0;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <h1>Remember and Find the Letters!</h1>
+        
+        <div class="question-section">
+            <p>Remember these letters:</p>
+            <div id="questionDisplay" class="letter-display"></div>
+            <button onclick="showOptions()" id="readyButton">I'm Ready!</button>
+        </div>
+        
+        <div id="optionsContainer" class="options-container" style="display: none;">
+        </div>
+    </div>
+
+    <div class="statistics-container" id="statsContainer" style="display: none;">
+        <h2>Game Statistics</h2>
+        <div class="stats-grid">
+            <div class="stat-item">
+                <h3>Total Time</h3>
+                <p id="totalTime">0s</p>
+            </div>
+            <div class="stat-item">
+                <h3>Total Taps</h3>
+                <p id="totalTaps">0</p>
+            </div>
+            <div class="stat-item">
+                <h3>Incorrect Placements</h3>
+                <p id="incorrectPlacements">0</p>
+            </div>
+        </div>
+        
+        <div class="history-container">
+            <h2>History</h2>
+            <div id="historyList"></div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js";
+        import { getDatabase, ref, set, get, push } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-database.js";
+
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyDFENL5Z_2Cewh4p6zp_BZtxL9n0di-9u8",
+            authDomain: "projeccvi.firebaseapp.com",
+            projectId: "projeccvi",
+            storageBucket: "projeccvi.firebasestorage.app",
+            messagingSenderId: "279067566247",
+            appId: "1:279067566247:web:9cf00f7bf1ea3549fabb82"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+
+        // Game variables
+        let currentLetter = '';
+        let currentOptions = [];
+        let foundCount = 0;
+        let totalTaps = 0;
+        let incorrectPlacements = 0;
+        let startTime = Date.now();
+
+        // Get DOM elements
+        const questionDisplay = document.getElementById('questionDisplay');
+        const optionsContainer = document.getElementById('optionsContainer');
+        const readyButton = document.getElementById('readyButton');
+
+        // Array of letters to use
+        const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
+
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        function selectRandomLetter() {
+            currentLetter = letters[Math.floor(Math.random() * letters.length)];
+            questionDisplay.textContent = currentLetter;
+        }
+
+        function createOptionsArray() {
+            let options = new Array(20);
+            // Place the target letter twice
+            options[0] = currentLetter;
+            options[1] = currentLetter;
+            
+            // Fill the rest with random different letters
+            const otherLetters = letters.filter(l => l !== currentLetter);
+            for (let i = 2; i < 20; i++) {
+                options[i] = otherLetters[i % otherLetters.length];
+            }
+            return shuffleArray(options);
+        }
+
+        function displayOptions() {
+            optionsContainer.innerHTML = '';
+            currentOptions = createOptionsArray();
+            
+            currentOptions.forEach((letter, index) => {
+                const div = document.createElement('div');
+                div.textContent = letter;
+                div.className = 'letter-option';
+                div.dataset.index = index;
+                div.onclick = () => checkAnswer(div, letter);
+                optionsContainer.appendChild(div);
+            });
+        }
+
+        function showFeedback(isCorrect) {
+            const div = document.createElement('div');
+            div.className = isCorrect ? 'correct-feedback' : 'incorrect-feedback';
+            div.textContent = isCorrect ? 'Correct!' : 'Try Again!';
+            document.body.appendChild(div);
+            setTimeout(() => div.remove(), 1000);
+        }
+
+        function checkAnswer(element, selectedLetter) {
+            totalTaps++;
+            document.getElementById('totalTaps').textContent = totalTaps;
+
+            if (selectedLetter === currentLetter) {
+                showFeedback(true);
+                foundCount++;
+                element.style.visibility = 'hidden';
+                
+                if (foundCount >= 2) {
+                    setTimeout(() => {
+                        alert('Congratulations!');
+                        document.getElementById('statsContainer').style.display = 'block';
+                        saveGameData();
+                        loadHistory();
+                    }, 500);
+                }
+            } else {
+                incorrectPlacements++;
+                document.getElementById('incorrectPlacements').textContent = incorrectPlacements;
+                
+                element.classList.add('incorrect');
+                showFeedback(false);
+                setTimeout(() => element.classList.remove('incorrect'), 300);
+            }
+        }
+
+        async function saveGameData() {
+            const endTime = Date.now();
+            const totalTime = (endTime - startTime) / 1000;
+            document.getElementById('totalTime').textContent = totalTime.toFixed(2) + 's';
+
+            const gameData = {
+                totalTime,
+                totalTaps,
+                incorrectPlacements,
+                timestamp: new Date().toISOString()
+            };
+
+            try {
+                const newGameRef = push(ref(db, 'vn2_games'));
+                await set(newGameRef, gameData);
+            } catch (error) {
+                console.error('Error saving game data:', error);
+            }
+        }
+
+        async function loadHistory() {
+            const historyRef = ref(db, 'vn2_games');
+            try {
+                const snapshot = await get(historyRef);
+                const historyList = document.getElementById('historyList');
+                historyList.innerHTML = '';
+
+                if (snapshot.exists()) {
+                    const games = [];
+                    snapshot.forEach((childSnapshot) => {
+                        games.push(childSnapshot.val());
+                    });
+
+                    games.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+
+                    games.slice(0, 5).forEach(game => {
+                        const historyItem = document.createElement('div');
+                        historyItem.className = 'history-item';
+                        historyItem.innerHTML = `
+                            <span>Time: ${game.totalTime.toFixed(2)}s</span>
+                            <span>Taps: ${game.totalTaps}</span>
+                            <span>Incorrect: ${game.incorrectPlacements}</span>
+                            <span>${new Date(game.timestamp).toLocaleString()}</span>
+                        `;
+                        historyList.appendChild(historyItem);
+                    });
+                }
+            } catch (error) {
+                console.error('Error loading history:', error);
+            }
+        }
+
+        function startNewRound() {
+            foundCount = 0;
+            selectRandomLetter();
+            questionDisplay.style.display = 'block';
+            readyButton.style.display = 'block';
+            optionsContainer.style.display = 'none';
+            optionsContainer.innerHTML = '';
+            startTime = Date.now();
+            totalTaps = 0;
+            incorrectPlacements = 0;
+            document.getElementById('totalTaps').textContent = '0';
+            document.getElementById('incorrectPlacements').textContent = '0';
+            document.getElementById('statsContainer').style.display = 'none';
+        }
+
+        function showOptions() {
+            questionDisplay.style.display = 'none';
+            readyButton.style.display = 'none';
+            optionsContainer.style.display = 'grid';
+            displayOptions();
+        }
+
+        // Start the game immediately
+        window.onload = () => {
+            startNewRound();
+            // Make functions available globally
+            window.showOptions = showOptions;
+            window.startNewRound = startNewRound;
+        };
+    </script>
+</body>
+</html>

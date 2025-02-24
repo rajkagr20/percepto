@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Object Matching Game</title>
+    <style>
+        body {
+            font-family: 'Comic Sans MS', cursive, sans-serif;
+            background-color: #f0f7ff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 10px;
+        }
+
+        .game-container {
+            background-color: white;
+            border-radius: 15px;
+            padding: 15px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            max-width: 1000px;
+            width: 95%;
+        }
+
+        h1 {
+            color: #2196F3;
+            margin: 10px 0;
+            font-size: 1.5em;
+        }
+
+        .question-section {
+            margin-bottom: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .question-image {
+            max-width: 120px;
+            height: auto;
+            border: 3px solid #2196F3;
+            border-radius: 8px;
+            padding: 5px;
+            margin-bottom: 10px;
+        }
+
+        .options-container {
+            display: grid;
+            grid-template-columns: repeat(5, 80px);
+            gap: 8px;
+            padding: 10px;
+            justify-content: center;
+            margin: 0 auto;
+        }
+
+        .option-image {
+            width: 80px;
+            height: 80px;
+            object-fit: contain;
+            border: 1px solid #e0e0e0;
+            padding: 4px;
+            cursor: pointer;
+            transition: transform 0.2s, border-color 0.2s;
+            background: white;
+        }
+
+        .option-image:hover {
+            transform: scale(1.05);
+            border-color: #2196F3;
+        }
+
+        .correct {
+            border-color: #4CAF50;
+            animation: correct 0.5s ease-out;
+        }
+
+        .incorrect {
+            border-color: #f44336;
+            animation: incorrect 0.5s ease-out;
+        }
+
+        @keyframes correct {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+        @keyframes incorrect {
+            0% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+            100% { transform: translateX(0); }
+        }
+
+        .correct-feedback, .incorrect-feedback {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            padding: 20px 40px;
+            border-radius: 10px;
+            font-size: 24px;
+            font-weight: bold;
+            color: white;
+            z-index: 1000;
+            animation: fadeOut 1s ease-in-out;
+        }
+
+        .correct-feedback {
+            background-color: #4CAF50;
+        }
+
+        .incorrect-feedback {
+            background-color: #f44336;
+        }
+
+        @keyframes fadeOut {
+            0% { opacity: 1; }
+            70% { opacity: 1; }
+            100% { opacity: 0; }
+        }
+
+        button {
+            background-color: #2196F3;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            margin: 5px;
+        }
+
+        button:hover {
+            background-color: #1976D2;
+        }
+
+        .statistics-container {
+            background-color: white;
+            border-radius: 15px;
+            padding: 15px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+            margin-top: 20px;
+            width: 95%;
+            max-width: 1000px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-top: 10px;
+        }
+
+        .stat-item {
+            padding: 10px;
+            background-color: #f8f9fa;
+            border-radius: 5px;
+            text-align: center;
+        }
+
+        .history-container {
+            margin-top: 20px;
+            width: 100%;
+        }
+
+        .history-item {
+            background-color: #f8f9fa;
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 5px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        @media (max-width: 600px) {
+            .options-container {
+                grid-template-columns: repeat(5, 40px);
+                gap: 3px;
+            }
+
+            .option-image {
+                width: 40px;
+                height: 40px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <h1>Remember and Find the Object!</h1>
+        
+        <div class="question-section">
+            <img id="questionImage" class="question-image" src="" alt="Question Image" style="cursor: pointer;">
+        </div>
+        
+        <div id="optionsContainer" class="options-container" style="display: none;">
+        </div>
+    </div>
+
+    <div class="statistics-container" id="statsContainer" style="display: none;">
+        <h2>Game Statistics</h2>
+        <div class="stats-grid">
+            <div class="stat-item">
+                <h3>Total Time</h3>
+                <p id="totalTime">0s</p>
+            </div>
+            <div class="stat-item">
+                <h3>Total Taps</h3>
+                <p id="totalTaps">0</p>
+            </div>
+            <div class="stat-item">
+                <h3>Incorrect Placements</h3>
+                <p id="incorrectPlacements">0</p>
+            </div>
+        </div>
+        
+        <div class="history-container">
+            <h2>History</h2>
+            <div id="historyList"></div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js";
+        import { getDatabase, ref, set, get, push } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-database.js";
+
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyDFENL5Z_2Cewh4p6zp_BZtxL9n0di-9u8",
+            authDomain: "projeccvi.firebaseapp.com",
+            projectId: "projeccvi",
+            storageBucket: "projeccvi.firebasestorage.app",
+            messagingSenderId: "279067566247",
+            appId: "1:279067566247:web:9cf00f7bf1ea3549fabb82"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+
+        // Game statistics
+        let startTime = Date.now();
+        let totalTaps = 0;
+        let incorrectPlacements = 0;
+        let currentQuestionIndex = 0;
+        let isGameComplete = false;
+
+        const baseImages = [
+            'images/VN/candy.png',
+            'images/VN/car.png',
+            'images/VN/comb.png',
+            'images/VN/cycle.png',
+            'images/VN/dog.png',
+            'images/VN/fish.png',
+            'images/VN/flower.png',
+            'images/VN/ice.png',
+            'images/VN/laddu.png',
+            'images/VN/parrot.png',
+            'images/VN/pencil.png',
+            'images/VN/shirt.png'
+        ];
+
+        let currentQuestion = null;
+        let foundCount = 0;
+        let usedImagesInCurrentRound = [];
+        let currentOptions = [];
+
+        const questionImage = document.getElementById('questionImage');
+        const optionsContainer = document.getElementById('optionsContainer');
+
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        function selectRandomQuestion() {
+            const availableImages = baseImages.filter(img => !usedImagesInCurrentRound.includes(img));
+            
+            if (availableImages.length === 0) {
+                usedImagesInCurrentRound = [];
+                currentQuestion = baseImages[Math.floor(Math.random() * baseImages.length)];
+            } else {
+                currentQuestion = availableImages[Math.floor(Math.random() * availableImages.length)];
+            }
+            
+            usedImagesInCurrentRound.push(currentQuestion);
+            questionImage.src = currentQuestion;
+        }
+
+        function createOptionsArray() {
+            let options = new Array(20).fill(null);
+            options[0] = currentQuestion;
+            options[1] = currentQuestion;
+            
+            const others = baseImages.filter(img => img !== currentQuestion);
+            for (let i = 2; i < 20; i++) {
+                options[i] = others[i % others.length];
+            }
+            return shuffleArray(options);
+        }
+
+        function displayOptions() {
+            optionsContainer.innerHTML = '';
+            currentOptions = createOptionsArray();
+            
+            currentOptions.forEach((imageSrc, index) => {
+                const img = document.createElement('img');
+                img.src = imageSrc;
+                img.className = 'option-image';
+                img.dataset.index = index;
+                img.onclick = () => checkAnswer(img, imageSrc);
+                optionsContainer.appendChild(img);
+            });
+        }
+
+        function showFeedback(isCorrect) {
+            const div = document.createElement('div');
+            div.className = isCorrect ? 'correct-feedback' : 'incorrect-feedback';
+            div.textContent = isCorrect ? 'Correct!' : 'Try Again!';
+            document.body.appendChild(div);
+            setTimeout(() => div.remove(), 1000);
+        }
+
+        function checkAnswer(imgElement, selectedImage) {
+            totalTaps++;
+            document.getElementById('totalTaps').textContent = totalTaps;
+
+            if (selectedImage === currentQuestion) {
+                showFeedback(true);
+                foundCount++;
+                // Hide the correct answer
+                imgElement.style.visibility = 'hidden';
+                
+                if (foundCount >= 2) {
+                    setTimeout(() => {
+                        alert('Congratulations!');
+                        // Show the statistics container
+                        document.getElementById('statsContainer').style.display = 'block';
+                        // Save game data and load history
+                        saveGameData();
+                        loadHistory();
+                    }, 500);
+                }
+            } else {
+                incorrectPlacements++;
+                document.getElementById('incorrectPlacements').textContent = incorrectPlacements;
+                
+                imgElement.classList.add('incorrect');
+                showFeedback(false);
+                setTimeout(() => imgElement.classList.remove('incorrect'), 300);
+            }
+        }
+
+        function startNewRound() {
+            foundCount = 0;
+            selectRandomQuestion();
+            questionImage.style.display = 'block';
+            optionsContainer.style.display = 'none';
+            optionsContainer.innerHTML = '';
+        }
+
+        function showOptions() {
+            questionImage.style.display = 'none';
+            optionsContainer.style.display = 'grid';
+            displayOptions();
+        }
+
+        async function loadHistory() {
+            const historyRef = ref(db, 'vn1_games');
+            try {
+                const snapshot = await get(historyRef);
+                const historyList = document.getElementById('historyList');
+                historyList.innerHTML = '';
+
+                if (snapshot.exists()) {
+                    const games = [];
+                    snapshot.forEach((childSnapshot) => {
+                        games.push(childSnapshot.val());
+                    });
+
+                    // Sort by timestamp descending (most recent first)
+                    games.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+
+                    // Display last 5 games
+                    games.slice(0, 5).forEach(game => {
+                        const historyItem = document.createElement('div');
+                        historyItem.className = 'history-item';
+                        historyItem.innerHTML = `
+                            <span>Time: ${game.totalTime}s</span>
+                            <span>Taps: ${game.totalTaps}</span>
+                            <span>Incorrect: ${game.incorrectPlacements}</span>
+                            <span>${new Date(game.timestamp).toLocaleString()}</span>
+                        `;
+                        historyList.appendChild(historyItem);
+                    });
+                }
+            } catch (error) {
+                console.error('Error loading history:', error);
+            }
+        }
+
+        async function saveGameData() {
+            const endTime = Date.now();
+            const totalTime = (endTime - startTime) / 1000;
+            document.getElementById('totalTime').textContent = totalTime.toFixed(2) + 's';
+
+            const gameData = {
+                totalTime,
+                totalTaps,
+                incorrectPlacements,
+                timestamp: new Date().toISOString()
+            };
+
+            try {
+                const newGameRef = push(ref(db, 'vn1_games'));
+                await set(newGameRef, gameData);
+            } catch (error) {
+                console.error('Error saving game data:', error);
+            }
+        }
+
+        // Start the game immediately and set up click handler
+        window.onload = () => {
+            startNewRound();
+            questionImage.onclick = showOptions;
+            loadHistory();
+        };
+    </script>
+</body>
+</html>

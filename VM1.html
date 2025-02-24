@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Memory Matching Game</title>
+    <style>
+        body {
+            font-family: 'Comic Sans MS', cursive, sans-serif;
+            background-color: #f0f7ff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 10px;
+        }
+
+        .game-container {
+            background-color: white;
+            border-radius: 15px;
+            padding: 15px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            max-width: 1000px;
+            width: 95%;
+        }
+
+        h1 {
+            color: #2196F3;
+            margin: 10px 0;
+            font-size: 1.5em;
+        }
+
+        .instructions {
+            margin-bottom: 20px;
+            font-size: 1.1em;
+            color: #555;
+        }
+
+        .memory-images {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 10px;
+            padding: 15px;
+            justify-content: center;
+            margin: 0 auto 20px auto;
+        }
+
+        .memory-image {
+            width: 100px;
+            height: 100px;
+            object-fit: contain;
+            border: 3px solid #2196F3;
+            border-radius: 8px;
+            padding: 5px;
+        }
+
+        .timer {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #2196F3;
+            margin: 15px 0;
+        }
+
+        .options-container {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 10px;
+            padding: 10px;
+            justify-content: center;
+            margin: 0 auto;
+        }
+
+        .option-image {
+            width: 80px;
+            height: 80px;
+            object-fit: contain;
+            border: 1px solid #e0e0e0;
+            padding: 4px;
+            cursor: pointer;
+            transition: transform 0.2s, border-color 0.2s;
+            background: white;
+        }
+
+        .option-image:hover {
+            transform: scale(1.05);
+            border-color: #2196F3;
+        }
+
+        .correct {
+            border-color: #4CAF50;
+            animation: correct 0.5s ease-out;
+        }
+
+        .incorrect {
+            border-color: #f44336;
+            animation: incorrect 0.5s ease-out;
+        }
+
+        .selected {
+            border: 3px solid #FFC107;
+            transform: scale(1.05);
+        }
+
+        @keyframes correct {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+        @keyframes incorrect {
+            0% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+            100% { transform: translateX(0); }
+        }
+
+        .feedback {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            padding: 20px 40px;
+            border-radius: 10px;
+            font-size: 24px;
+            font-weight: bold;
+            color: white;
+            z-index: 1000;
+            animation: fadeOut 1s ease-in-out;
+        }
+
+        .feedback.correct {
+            background-color: #4CAF50;
+        }
+
+        .feedback.incorrect {
+            background-color: #f44336;
+        }
+
+        @keyframes fadeOut {
+            0% { opacity: 1; }
+            70% { opacity: 1; }
+            100% { opacity: 0; }
+        }
+
+        button {
+            background-color: #2196F3;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            margin: 15px 5px;
+        }
+
+        button:hover {
+            background-color: #1976D2;
+        }
+
+        button:disabled {
+            background-color: #b0bec5;
+            cursor: not-allowed;
+        }
+
+        .statistics-container {
+            background-color: white;
+            border-radius: 15px;
+            padding: 15px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+            margin-top: 20px;
+            width: 95%;
+            max-width: 1000px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-top: 10px;
+        }
+
+        .stat-item {
+            padding: 10px;
+            background-color: #f8f9fa;
+            border-radius: 5px;
+            text-align: center;
+        }
+
+        .history-container {
+            margin-top: 20px;
+            width: 100%;
+        }
+
+        .history-item {
+            background-color: #f8f9fa;
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 5px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        @media (max-width: 768px) {
+            .memory-images {
+                grid-template-columns: repeat(3, 1fr);
+            }
+            
+            .memory-image {
+                width: 80px;
+                height: 80px;
+            }
+
+            .options-container {
+                grid-template-columns: repeat(4, 1fr);
+            }
+
+            .option-image {
+                width: 60px;
+                height: 60px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .memory-images {
+                grid-template-columns: repeat(3, 1fr);
+            }
+            
+            .memory-image {
+                width: 60px;
+                height: 60px;
+            }
+
+            .options-container {
+                grid-template-columns: repeat(3, 1fr);
+            }
+
+            .option-image {
+                width: 50px;
+                height: 50px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <h1>Memory Challenge!</h1>
+        
+        <div id="instructionsDiv" class="instructions">
+            Remember these 5 images! They will disappear in <span id="timerDisplay">60</span> seconds.
+        </div>
+        
+        <div id="memoryImagesContainer" class="memory-images">
+            <!-- Memory images will be placed here -->
+        </div>
+        
+        <div id="selectionInstructions" class="instructions" style="display: none;">
+            Select all 5 images that were shown earlier
+            <div><span id="foundCount">0</span>/5 found</div>
+        </div>
+        
+        <div id="optionsContainer" class="options-container" style="display: none;">
+            <!-- Option images will be placed here -->
+        </div>
+        
+        <button id="checkButton" style="display: none;">Check Answers</button>
+        <button id="startOverButton" style="display: none;">Start New Game</button>
+    </div>
+
+    <div class="statistics-container" id="statsContainer" style="display: none;">
+        <h2>Game Statistics</h2>
+        <div class="stats-grid">
+            <div class="stat-item">
+                <h3>Total Time</h3>
+                <p id="totalTime">0s</p>
+            </div>
+            <div class="stat-item">
+                <h3>Total Selections</h3>
+                <p id="totalTaps">0</p>
+            </div>
+            <div class="stat-item">
+                <h3>Incorrect Selections</h3>
+                <p id="incorrectPlacements">0</p>
+            </div>
+        </div>
+        
+        <div class="history-container">
+            <h2>History</h2>
+            <div id="historyList"></div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js";
+        import { getDatabase, ref, set, get, push } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-database.js";
+
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyDFENL5Z_2Cewh4p6zp_BZtxL9n0di-9u8",
+            authDomain: "projeccvi.firebaseapp.com",
+            projectId: "projeccvi",
+            storageBucket: "projeccvi.firebasestorage.app",
+            messagingSenderId: "279067566247",
+            appId: "1:279067566247:web:9cf00f7bf1ea3549fabb82"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+
+        // Game elements
+        const memoryImagesContainer = document.getElementById('memoryImagesContainer');
+        const optionsContainer = document.getElementById('optionsContainer');
+        const timerDisplay = document.getElementById('timerDisplay');
+        const instructionsDiv = document.getElementById('instructionsDiv');
+        const selectionInstructions = document.getElementById('selectionInstructions');
+        const foundCountDisplay = document.getElementById('foundCount');
+        const checkButton = document.getElementById('checkButton');
+        const startOverButton = document.getElementById('startOverButton');
+        const statsContainer = document.getElementById('statsContainer');
+
+        // Game statistics
+        let startTime = 0;
+        let totalTaps = 0;
+        let incorrectPlacements = 0;
+        let timerInterval = null;
+        let secondsLeft = 60;
+
+        // Game state
+        const baseImages = [
+            'images/VM/candy.png',
+            'images/VM/car.png',
+            'images/VM/comb.png',
+            'images/VM/cycle.png',
+            'images/VM/dog.png',
+            'images/VM/fish.png',
+            'images/VM/flower.png',
+            'images/VM/ice.png',
+            'images/VM/laddu.png',
+            'images/VM/parrot.png',
+            'images/VM/pencil.png',
+            'images/VM/ball.png',
+            'images/VM/book.png',
+            'images/VM/cap.png',
+            'images/VM/glass.png',
+            'images/VM/tree.png',
+            'images/VM/water.png',
+            'images/VM/shirt.png'
+        ];
+        
+        let targetImages = [];
+        let selectedImages = [];
+        let allOptions = [];
+
+        function shuffleArray(array) {
+            const newArray = [...array];
+            for (let i = newArray.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
+            }
+            return newArray;
+        }
+
+        function startNewGame() {
+            // Reset game state
+            targetImages = [];
+            selectedImages = [];
+            allOptions = [];
+            totalTaps = 0;
+            incorrectPlacements = 0;
+            document.getElementById('totalTaps').textContent = '0';
+            document.getElementById('incorrectPlacements').textContent = '0';
+            
+            // Hide elements
+            statsContainer.style.display = 'none';
+            optionsContainer.style.display = 'none';
+            selectionInstructions.style.display = 'none';
+            checkButton.style.display = 'none';
+            startOverButton.style.display = 'none';
+            
+            // Show instructions and memory images
+            instructionsDiv.style.display = 'block';
+            memoryImagesContainer.style.display = 'grid';
+            
+            // Select 5 random images
+            const shuffledImages = shuffleArray(baseImages);
+            targetImages = shuffledImages.slice(0, 5);
+            
+            // Display memory images
+            memoryImagesContainer.innerHTML = '';
+            targetImages.forEach(img => {
+                const imgElement = document.createElement('img');
+                imgElement.src = img;
+                imgElement.className = 'memory-image';
+                memoryImagesContainer.appendChild(imgElement);
+            });
+            
+            // Start the timer
+            secondsLeft = 60;
+            timerDisplay.textContent = secondsLeft;
+            startTime = Date.now();
+            
+            if (timerInterval) {
+                clearInterval(timerInterval);
+            }
+            
+            timerInterval = setInterval(() => {
+                secondsLeft--;
+                timerDisplay.textContent = secondsLeft;
+                
+                if (secondsLeft <= 0) {
+                    clearInterval(timerInterval);
+                    showOptionsPhase();
+                }
+            }, 1000);
+        }
+
+        function showOptionsPhase() {
+            // Hide memory phase elements
+            memoryImagesContainer.style.display = 'none';
+            instructionsDiv.style.display = 'none';
+            
+            // Reset the start time to measure only the selection phase
+            startTime = Date.now();
+            
+            // Show selection phase elements
+            selectionInstructions.style.display = 'block';
+            optionsContainer.style.display = 'grid';
+            checkButton.style.display = 'block';
+            
+            // Create all options (all images)
+            allOptions = shuffleArray(baseImages);
+            
+            // Display options
+            optionsContainer.innerHTML = '';
+            allOptions.forEach((img, index) => {
+                const imgElement = document.createElement('img');
+                imgElement.src = img;
+                imgElement.className = 'option-image';
+                imgElement.dataset.index = index;
+                imgElement.dataset.src = img;
+                
+                imgElement.addEventListener('click', () => {
+                    toggleImageSelection(imgElement, img);
+                });
+                
+                optionsContainer.appendChild(imgElement);
+            });
+            
+            // Reset selection tracking
+            selectedImages = [];
+            updateFoundCount();
+        }
+
+        function toggleImageSelection(imgElement, imgSrc) {
+            totalTaps++;
+            document.getElementById('totalTaps').textContent = totalTaps;
+            
+            const isSelected = imgElement.classList.contains('selected');
+            
+            if (isSelected) {
+                // Deselect the image
+                imgElement.classList.remove('selected');
+                selectedImages = selectedImages.filter(img => img !== imgSrc);
+            } else {
+                // Don't allow selecting more than 5 images
+                if (selectedImages.length >= 5) {
+                    showFeedback('You can only select 5 images!', false);
+                    return;
+                }
+                
+                // Select the image
+                imgElement.classList.add('selected');
+                selectedImages.push(imgSrc);
+            }
+            
+            updateFoundCount();
+        }
+
+        function updateFoundCount() {
+            foundCountDisplay.textContent = selectedImages.length;
+            
+            // Enable the check button only when exactly 5 images are selected
+            checkButton.disabled = selectedImages.length !== 5;
+        }
+
+        function checkAnswers() {
+            let correctCount = 0;
+            let wrongSelections = [];
+            
+            // Count correct selections and identify wrong ones
+            selectedImages.forEach(selected => {
+                if (targetImages.includes(selected)) {
+                    correctCount++;
+                } else {
+                    wrongSelections.push(selected);
+                    incorrectPlacements++;
+                }
+            });
+            
+            // Highlight correct and incorrect selections
+            document.querySelectorAll('.option-image').forEach(img => {
+                if (img.classList.contains('selected')) {
+                    const imgSrc = img.dataset.src;
+                    
+                    if (targetImages.includes(imgSrc)) {
+                        img.classList.add('correct');
+                    } else {
+                        img.classList.add('incorrect');
+                    }
+                }
+                
+                // Disable further selection
+                img.style.pointerEvents = 'none';
+            });
+            
+            // Update incorrect count
+            document.getElementById('incorrectPlacements').textContent = incorrectPlacements;
+            
+            // Show result feedback
+            if (correctCount === 5) {
+                showFeedback('Perfect! All correct!', true);
+            } else {
+                showFeedback(`${correctCount}/5 correct`, false);
+            }
+            
+            // Show start over button and hide check button
+            checkButton.style.display = 'none';
+            startOverButton.style.display = 'block';
+            
+            // Show stats
+            const totalTime = ((Date.now() - startTime) / 1000).toFixed(2);
+            document.getElementById('totalTime').textContent = totalTime + 's';
+            statsContainer.style.display = 'block';
+            
+            // Save game data
+            saveGameData({
+                totalTime: parseFloat(totalTime),
+                totalTaps: totalTaps,
+                incorrectPlacements: incorrectPlacements,
+                correctSelections: correctCount
+            });
+            
+            // Load history
+            loadHistory();
+        }
+
+        function showFeedback(message, isCorrect) {
+            const div = document.createElement('div');
+            div.className = `feedback ${isCorrect ? 'correct' : 'incorrect'}`;
+            div.textContent = message;
+            document.body.appendChild(div);
+            setTimeout(() => div.remove(), 2000);
+        }
+
+        async function saveGameData(gameData) {
+            gameData.timestamp = new Date().toISOString();
+            
+            try {
+                const newGameRef = push(ref(db, 'vn1_games'));
+                await set(newGameRef, gameData);
+            } catch (error) {
+                console.error('Error saving game data:', error);
+            }
+        }
+
+        async function loadHistory() {
+            const historyRef = ref(db, 'vn1_games');
+            try {
+                const snapshot = await get(historyRef);
+                const historyList = document.getElementById('historyList');
+                historyList.innerHTML = '';
+
+                if (snapshot.exists()) {
+                    const games = [];
+                    snapshot.forEach((childSnapshot) => {
+                        games.push(childSnapshot.val());
+                    });
+
+                    // Sort by timestamp descending (most recent first)
+                    games.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+
+                    // Display last 5 games
+                    games.slice(0, 5).forEach(game => {
+                        const historyItem = document.createElement('div');
+                        historyItem.className = 'history-item';
+                        historyItem.innerHTML = `
+                            <span>Time: ${game.totalTime}s</span>
+                            <span>Selections: ${game.totalTaps}</span>
+                            <span>Correct: ${game.correctSelections || 0}/5</span>
+                            <span>${new Date(game.timestamp).toLocaleString()}</span>
+                        `;
+                        historyList.appendChild(historyItem);
+                    });
+                }
+            } catch (error) {
+                console.error('Error loading history:', error);
+            }
+        }
+
+        // Event listeners
+        checkButton.addEventListener('click', checkAnswers);
+        startOverButton.addEventListener('click', startNewGame);
+
+        // Start the game when the page loads
+        window.onload = startNewGame;
+    </script>
+</body>
+</html>
